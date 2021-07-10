@@ -60,7 +60,7 @@ const commentColumns = [
 
 const searchRef = React.createRef();
 
-export function Home(props) {
+export function Search(props) {
     const [algoliaFilter, setAlgoliaFilter] = useState('story');
     const [algoliaFilterFor, setAlgoliaFilterFor] = useState('all');
     const [processDisabled,setProcessDisabled] = useState(false);
@@ -121,11 +121,13 @@ export function Home(props) {
     function handleFilter(event) {
         //console.log("Filter => ", event.target.value);
         setAlgoliaFilter(event.target.value);
+        fetchAlgolia();
     }
 
     function handleFilterFor(event) {
         //console.log("FilterFor => ", event.target.value);
         setAlgoliaFilterFor(event.target.value);
+        fetchAlgolia();
     }
 
     async function fetchAlgolia() {
