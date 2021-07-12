@@ -1,12 +1,12 @@
 import {createStore} from "redux";
 
-const initialState = {arrayTest: []};
+const initialState = {searchs: []};
 
 function historyReducer(state = initialState, action) {
     switch (action.type) {
         case 'push':
             return {
-                arrayTest: [...state.arrayTest, action.payload]
+                searchs: [...state.searchs, action.payload]
             };
         default:
             break;

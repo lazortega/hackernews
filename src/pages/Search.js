@@ -62,12 +62,11 @@ const commentColumns = [
 const searchRef = React.createRef();
 const filterRef = React.createRef();
 const filterForRef = React.createRef();
+let defaultFilterColumn = 'story';
+let defaultFilterForColumn = 'all';
 
 export function Search(props) {
     const dispatch = useDispatch();
-
-    const [algoliaFilter, setAlgoliaFilter] = useState('story');
-    const [algoliaFilterFor, setAlgoliaFilterFor] = useState('all');
     const [processDisabled,setProcessDisabled] = useState(false);
     const [displayModal,setDisplayModal] = useState(false);
     const [newsHits, setNewsHits] = useState([]);
@@ -118,12 +117,12 @@ export function Search(props) {
     }
 
     function handleFilter(event) {
-        setAlgoliaFilter(event.target.value);
+        defaultFilterColumn = filterRef.current.value;
         fetchAlgolia();
     }
 
     function handleFilterFor(event) {
-        setAlgoliaFilterFor(event.target.value);
+        defaultFilterForColumn = filterForRef.current.value;
         fetchAlgolia();
     }
 
@@ -173,8 +172,8 @@ export function Search(props) {
         try {
 
             const axiosFetchResponse = await getNews(`${searchRef.current.value}`,
-                `${algoliaFilter}`,
-                `${algoliaFilterFor}`);
+                `${filterRef.current.value}`,
+                `${filterForRef.current.value}`);
 
             if (axiosFetchResponse.status !== 200) {
                 throw new Error('Something went wrong!');
@@ -183,8 +182,10 @@ export function Search(props) {
             //TODO: Save the Search History
             const nowDateStr = (new Date()).toLocaleDateString() + ' ' + (new Date()).toLocaleTimeString();
             const key = new Date().getTime();
+
             dispatch({type: 'push',
-                payload: {id: key, timeStamp: nowDateStr, query: buildHistory(searchRef.current.value,algoliaFilter, algoliaFilterFor)}});
+                payload:
+                    {id: key, timeStamp: nowDateStr, query: buildHistory(searchRef.current.value,filterRef.current.value, filterForRef.current.value)}});
 
             //TODO : Implement more elegant paging based on axiosFetchResponse.data.nbPages
             // const numOfPages = axiosFetchResponse.data.nbPages;
@@ -201,13 +202,12 @@ export function Search(props) {
                     id: index,
                     author: obj.author,
                     title: (obj.title ? obj.title : obj.story_title),
-                    url: (algoliaFilter === 'comment' ? obj.comment_text : obj.url),
+                    url: (filterRef.current.value === 'comment' ? obj.comment_text : obj.url),
                     created_at: obj.created_at,
                     created_at_i: obj.created_at_i,
                     posted: mapTime(obj.created_at_i) + ' ago'
                 })
             ));
-
             setNewsHits([]);
             setTransformedData(localtransformedData);
             setDisplayModal(false);
@@ -244,7 +244,7 @@ export function Search(props) {
                                         <Form.Label>Search</Form.Label>
                                     </Col>
                                     <Col sm={3}>
-                                        <Form.Control as="select" ref={filterRef} value={algoliaFilter} onChange={handleFilter}>
+                                        <Form.Control as="select" ref={filterRef} value={defaultFilterColumn} onChange={handleFilter}>
                                             <option value="story" >Stories</option>
                                             <option value="front_page">Front Page</option>
                                             <option value="comment">Comments</option>
@@ -254,7 +254,7 @@ export function Search(props) {
                                         <Form.Label>for</Form.Label>
                                     </Col>
                                     <Col sm={2}>
-                                        <Form.Control as="select"  ref={filterForRef} value={algoliaFilterFor} onChange={handleFilterFor}>
+                                        <Form.Control as="select"  ref={filterForRef} value={defaultFilterForColumn} onChange={handleFilterFor}>
                                             <option value="all" >All Time</option>
                                             <option value="past24">Last 24h</option>
                                             <option value="pastWeek">Past Week</option>
@@ -281,7 +281,7 @@ export function Search(props) {
                                 bootstrap4
                                 keyField="id"
                                 data={transformedData}
-                                columns={algoliaFilter === 'comment' ? commentColumns : columns}
+                                columns={defaultFilterColumn === 'comment' ? commentColumns : columns}
                                 pagination={paginationFactory({ sizePerPage: 50 })}
                             />
                         </Card.Body>

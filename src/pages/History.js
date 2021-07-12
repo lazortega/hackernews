@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import { Row, Col, Card } from "react-bootstrap";
 
 export  function History(props) {
-    const searchHistory = useSelector(state => state.arrayTest);
+    const searchHistory = useSelector(state => state.searchs);
 
     return (
         <>
