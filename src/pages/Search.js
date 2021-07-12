@@ -1,8 +1,9 @@
 import React, {useState, useEffect} from 'react';
+import {useDispatch} from "react-redux";
 import { Row, Col, Card, Form, Button } from "react-bootstrap";
 import BootstrapTable from "react-bootstrap-table-next";
 import paginationFactory from "react-bootstrap-table2-paginator";
-import {getNews, mapTime, toTimestamp} from '../lib/Api';
+import {getNews, mapTime} from '../lib/Api';
 import { ProcessModal } from '../components/ProcessModal';
 
 const columns = [
@@ -24,7 +25,7 @@ const columns = [
     {
         dataField: "url",
         text: "Url",
-        formatter: (cell, row) => <a target='_blank' href={cell}> {cell} </a>
+        formatter: (cell, row) => <a target='_blank' rel='noreferrer' href={cell}> {cell} </a>
     },
     {
         dataField: "posted",
@@ -59,8 +60,12 @@ const commentColumns = [
 ];
 
 const searchRef = React.createRef();
+const filterRef = React.createRef();
+const filterForRef = React.createRef();
 
 export function Search(props) {
+    const dispatch = useDispatch();
+
     const [algoliaFilter, setAlgoliaFilter] = useState('story');
     const [algoliaFilterFor, setAlgoliaFilterFor] = useState('all');
     const [processDisabled,setProcessDisabled] = useState(false);
@@ -106,12 +111,6 @@ export function Search(props) {
 
     },[]); // [] To Avoid the Infinite Loop
 
-    // #TODO: Temp fx used to simulate RPC calls
-    // function stall used to simulate an async process with a 6 sec delay by default
-    async function stall(stallTime = 6000) {
-        await new Promise(resolve => setTimeout(resolve, stallTime));
-    }
-
     function handleOnConfirm(){
         // Called from ProcessModal component
         setDisplayModal(false);
@@ -119,15 +118,51 @@ export function Search(props) {
     }
 
     function handleFilter(event) {
-        //console.log("Filter => ", event.target.value);
         setAlgoliaFilter(event.target.value);
         fetchAlgolia();
     }
 
     function handleFilterFor(event) {
-        //console.log("FilterFor => ", event.target.value);
         setAlgoliaFilterFor(event.target.value);
         fetchAlgolia();
+    }
+
+    function buildHistory(queryArg, filterArg, filterForArg){
+        let filterStr = '';
+        let filterForStr = '';
+
+        switch (filterArg) {
+            case 'story':
+                filterStr = 'Stories';
+                break;
+            case 'front_page':
+                filterStr = 'Front Page';
+                break;
+            case 'comment':
+                filterStr = 'Comments'  ;
+                break;
+            default: break;
+        }
+        switch (filterForArg) {
+            case 'all':
+                filterForStr = 'All Time';
+                break;
+            case 'past24':
+                filterForStr = 'Last 24h';
+                break;
+            case 'pastWeek':
+                filterForStr = 'Past Week';
+                break;
+            case 'pastMonth':
+                filterForStr = 'Past Month';
+                break;
+            case 'pastYear':
+                filterForStr = 'Past Year';
+                break;
+            default: break;
+        }
+
+        return queryArg + ' for ' + filterForStr + ' in ' + filterStr;
     }
 
     async function fetchAlgolia() {
@@ -145,7 +180,12 @@ export function Search(props) {
                 throw new Error('Something went wrong!');
             }
 
-            //#TODO : Implement more elegant paging based on axiosFetchResponse.data.nbPages
+            //TODO: Save the Search History
+            const nowDateStr = (new Date()).toLocaleDateString() + ' ' + (new Date()).toLocaleTimeString();
+            dispatch({type: 'push',
+                payload: {timeStamp: nowDateStr, query: buildHistory(searchRef.current.value,algoliaFilter, algoliaFilterFor)}});
+
+            //TODO : Implement more elegant paging based on axiosFetchResponse.data.nbPages
             // const numOfPages = axiosFetchResponse.data.nbPages;
             // console.log('Number of Pages => ',numOfPages);
 
@@ -154,9 +194,6 @@ export function Search(props) {
             axiosparsedData.hits.map(obj => (
                 newsHits.push(obj)
             ));
-
-            // #TODO: Debug Code -- Remove
-            // console.log('newsHits => ',newsHits);
 
             newsHits.map((obj,index) => (
                 localtransformedData.push({
@@ -169,15 +206,6 @@ export function Search(props) {
                     posted: mapTime(obj.created_at_i) + ' ago'
                 })
             ));
-
-            // #TODO: Debug Code -- Remove
-            //console.log('localtransformedData => ',localtransformedData);
-
-            // #TODO: Last 24h Debug Code -- Remove
-            // const currDate = new Date();
-            // currDate.setHours(currDate.getHours() - 24);
-            // console.log('Current Date less 24h',Math.round(currDate.getTime()/1000));
-            // console.log('Less 24h',mapTime(Math.round(currDate.getTime()/1000)));
 
             setNewsHits([]);
             setTransformedData(localtransformedData);
@@ -215,7 +243,7 @@ export function Search(props) {
                                         <Form.Label>Search</Form.Label>
                                     </Col>
                                     <Col sm={3}>
-                                        <Form.Control as="select" value={algoliaFilter} onChange={handleFilter}>
+                                        <Form.Control as="select" ref={filterRef} value={algoliaFilter} onChange={handleFilter}>
                                             <option value="story" >Stories</option>
                                             <option value="front_page">Front Page</option>
                                             <option value="comment">Comments</option>
@@ -225,7 +253,7 @@ export function Search(props) {
                                         <Form.Label>for</Form.Label>
                                     </Col>
                                     <Col sm={2}>
-                                        <Form.Control as="select" value={algoliaFilterFor} onChange={handleFilterFor}>
+                                        <Form.Control as="select"  ref={filterForRef} value={algoliaFilterFor} onChange={handleFilterFor}>
                                             <option value="all" selected>All Time</option>
                                             <option value="past24">Last 24h</option>
                                             <option value="pastWeek">Past Week</option>

@@ -13,19 +13,14 @@ function isActive(history, path){
 export default function MainNavigation(props) {
     const history = useHistory();
 
-    function handleSelect(eventKey) {
-        console.log(eventKey);
-        return;
-    }
-
     return (
         <>
             <header >
                 <Navbar bg="light" variant="light" expand="md">
                     <Navbar.Brand href="/search">Hacker News <AnnouncementIcon/></Navbar.Brand>
-                    <Nav className="mr-auto" defaultActiveKey="/" onSelect={handleSelect}>
-                        <Nav.Link eventKey="search" active={isActive(history, '/search')} href="/search" ><SearchIcon/> Search</Nav.Link>
-                        <Nav.Link eventKey="history" active={isActive(history, '/history')} href="/history" ><HistoryIcon/> Search History</Nav.Link>
+                    <Nav className="mr-auto" defaultActiveKey="/" >
+                        <Nav.Link eventKey="search" active={isActive(history, '/search')} onSelect={() => {history.push('/search')}} ><SearchIcon/> Search</Nav.Link>
+                        <Nav.Link eventKey="history" active={isActive(history, '/history')} onSelect={() => {history.push('/history')}} ><HistoryIcon/> Search History</Nav.Link>
                     </Nav>
                 </Navbar>
             </header>

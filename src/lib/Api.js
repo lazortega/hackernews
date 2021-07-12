@@ -48,21 +48,6 @@ export async function getNews (queryArg, tagArg, forArg) {
                     }
                 }).then(data => data);
     }
-    //#TODO: Begin Debug Code -- Remove
-    console.log('---------------------------------------------');
-    console.log('--- API Fetch responseData request object ---');
-    console.log(responseData.request);
-    console.log('---------------------------------------------');
-    console.log('--- API Fetch responseData headers object ---');
-    console.log(responseData.headers);
-    console.log('---------------------------------------------');
-    console.log('--- API Fetch responseData data object ---');
-    console.log(responseData.data);
-    console.log('---------------------------------------------');
-    console.log('--- API Fetch responseData data.hits object ---');
-    console.log(responseData.data.hits);
-    console.log('---------------------------------------------');
-    //#TODO: End Debug Code -- Remove
 
     return responseData;
 }
