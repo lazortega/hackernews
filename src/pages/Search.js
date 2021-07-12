@@ -182,8 +182,9 @@ export function Search(props) {
 
             //TODO: Save the Search History
             const nowDateStr = (new Date()).toLocaleDateString() + ' ' + (new Date()).toLocaleTimeString();
+            const key = new Date().getTime();
             dispatch({type: 'push',
-                payload: {timeStamp: nowDateStr, query: buildHistory(searchRef.current.value,algoliaFilter, algoliaFilterFor)}});
+                payload: {id: key, timeStamp: nowDateStr, query: buildHistory(searchRef.current.value,algoliaFilter, algoliaFilterFor)}});
 
             //TODO : Implement more elegant paging based on axiosFetchResponse.data.nbPages
             // const numOfPages = axiosFetchResponse.data.nbPages;
@@ -254,7 +255,7 @@ export function Search(props) {
                                     </Col>
                                     <Col sm={2}>
                                         <Form.Control as="select"  ref={filterForRef} value={algoliaFilterFor} onChange={handleFilterFor}>
-                                            <option value="all" selected>All Time</option>
+                                            <option value="all" >All Time</option>
                                             <option value="past24">Last 24h</option>
                                             <option value="pastWeek">Past Week</option>
                                             <option value="pastMonth">Past Month</option>

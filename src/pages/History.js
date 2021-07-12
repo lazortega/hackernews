@@ -8,9 +8,9 @@ export  function History(props) {
     return (
         <>
             {searchHistory.map(item => {
-               return <Row>
+               return <Row key={item.id}>
                     <Col md={12}>
-                        <Card>
+                        <Card >
                             <Card.Header>{item.timeStamp}</Card.Header>
                             <Card.Body>
                                 <p>You Searched {item.query}</p>
